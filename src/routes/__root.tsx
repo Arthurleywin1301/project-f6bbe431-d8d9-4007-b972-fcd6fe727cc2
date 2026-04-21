@@ -46,7 +46,7 @@ export const Route = createRootRoute({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="ar-u-nu-latn" dir="rtl">
       <head>
         <HeadContent />
       </head>
