@@ -1,5 +1,4 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
-import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
@@ -8,7 +7,7 @@ function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="font-display text-7xl font-bold text-gold">٤٠٤</h1>
+        <h1 className="font-display text-7xl font-bold text-gold">404</h1>
         <h2 className="mt-4 font-display text-xl font-semibold text-foreground">الصفحة غير موجودة</h2>
         <p className="mt-2 text-sm text-muted-foreground">لم نتمكن من إيجاد ما تبحث عنه.</p>
         <div className="mt-6">
@@ -61,9 +60,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   return (
-    <AuthProvider>
+    <>
       <Outlet />
       <Toaster position="top-center" />
-    </AuthProvider>
+    </>
   );
 }
