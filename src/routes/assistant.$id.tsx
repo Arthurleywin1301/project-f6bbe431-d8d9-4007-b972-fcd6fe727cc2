@@ -1,19 +1,21 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useRef, useState, useEffect } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import ReactMarkdown from "react-markdown";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { MobileNav } from "@/components/MobileNav";
 import { askAssistant } from "@/utils/assistant.functions";
-import { Send, Sparkles, Loader2 } from "lucide-react";
+import { Send, Sparkles, Loader2, ArrowRight } from "lucide-react";
+import { toast } from "sonner";
 
-export const Route = createFileRoute("/assistant")({
+export const Route = createFileRoute("/assistant/$id")({
   head: () => ({
     meta: [
-      { title: "المساعد الذكي — الحرب العالمية الثانية" },
-      { name: "description", content: "اسأل المساعد الذكي أي سؤال عن الحرب العالمية الثانية باللغة العربية." },
+      { title: "محادثة — المساعد الذكي" },
     ],
   }),
-  component: AssistantPage,
+  component: ChatPage,
 });
 
 interface Msg {
@@ -24,17 +26,49 @@ interface Msg {
 const SUGGESTIONS = [
   "لماذا انهزمت ألمانيا في ستالينغراد؟",
   "من هو إرفين روميل؟",
-  "كم عدد ضحايا الهولوكوست؟",
   "ما أهمية إنزال نورماندي؟",
 ];
 
-function AssistantPage() {
+function ChatPage() {
+  const { id } = Route.useParams();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const ask = useServerFn(askAssistant);
+
   const [messages, setMessages] = useState<Msg[]>([]);
+  const [title, setTitle] = useState("محادثة جديدة");
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [hydrating, setHydrating] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Auth gate + load conversation
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      navigate({ to: "/auth" });
+      return;
+    }
+    void hydrate();
+  }, [user, authLoading, id]);
+
+  const hydrate = async () => {
+    setHydrating(true);
+    const [{ data: conv, error: ce }, { data: msgs, error: me }] = await Promise.all([
+      supabase.from("conversations").select("title").eq("id", id).maybeSingle(),
+      supabase.from("messages").select("role, content").eq("conversation_id", id).order("created_at", { ascending: true }),
+    ]);
+    if (ce || !conv) {
+      toast.error("لم نجد هذه المحادثة");
+      navigate({ to: "/assistant" });
+      return;
+    }
+    if (me) toast.error("تعذّر تحميل الرسائل");
+    setTitle(conv.title);
+    setMessages(((msgs ?? []) as Msg[]));
+    setHydrating(false);
+  };
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -42,45 +76,74 @@ function AssistantPage() {
 
   const send = async (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed || loading) return;
+    if (!trimmed || loading || !user) return;
     setError(null);
-    const next: Msg[] = [...messages, { role: "user", content: trimmed }];
+    const userMsg: Msg = { role: "user", content: trimmed };
+    const next = [...messages, userMsg];
     setMessages(next);
     setInput("");
     setLoading(true);
+
+    // Persist user message
+    await supabase.from("messages").insert({
+      conversation_id: id, user_id: user.id, role: "user", content: trimmed,
+    });
+
+    // Auto-title from first message
+    if (messages.length === 0) {
+      const newTitle = trimmed.slice(0, 60);
+      setTitle(newTitle);
+      await supabase.from("conversations").update({ title: newTitle }).eq("id", id);
+    }
+
     try {
       const res = await ask({ data: { messages: next } });
       if (res.error) {
         setError(res.error);
       } else {
-        setMessages([...next, { role: "assistant", content: res.reply }]);
+        const assistantMsg: Msg = { role: "assistant", content: res.reply };
+        setMessages([...next, assistantMsg]);
+        await supabase.from("messages").insert({
+          conversation_id: id, user_id: user.id, role: "assistant", content: res.reply,
+        });
       }
-    } catch (e) {
+    } catch {
       setError("تعذّر الوصول إلى المساعد.");
     } finally {
       setLoading(false);
     }
   };
 
+  if (authLoading || hydrating) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-gold" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col pb-24">
-      <div className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
+          <Link to="/assistant" className="rounded-full p-2 text-muted-foreground hover:bg-card hover:text-gold" aria-label="رجوع">
+            <ArrowRight className="h-4 w-4" />
+          </Link>
           <div className="flex h-9 w-9 items-center justify-center rounded-md bg-gold shadow-gold">
             <Sparkles className="h-4 w-4 text-primary-foreground" />
           </div>
-          <div>
-            <h1 className="font-display text-base font-bold leading-tight text-foreground">المساعد الذكي</h1>
+          <div className="flex-1 overflow-hidden">
+            <h1 className="truncate font-display text-base font-bold text-foreground">{title}</h1>
             <p className="text-[10px] text-muted-foreground">خبير في الحرب العالمية الثانية</p>
           </div>
         </div>
-      </div>
+      </header>
 
       <div ref={scrollRef} className="mx-auto w-full max-w-3xl flex-1 space-y-4 overflow-y-auto px-4 py-5">
         {messages.length === 0 && (
           <div className="fade-up rounded-xl border border-border gradient-card p-5 text-center shadow-elegant">
             <Sparkles className="mx-auto h-8 w-8 text-gold" />
-            <h2 className="mt-3 font-display text-lg font-bold text-foreground">مرحبًا بك</h2>
+            <h2 className="mt-3 font-display text-lg font-bold text-foreground">ابدأ محادثتك</h2>
             <p className="mt-1 text-sm text-muted-foreground">اسألني أي شيء عن الحرب العالمية الثانية.</p>
             <div className="mt-4 grid gap-2">
               {SUGGESTIONS.map((s) => (
@@ -133,10 +196,7 @@ function AssistantPage() {
       </div>
 
       <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          send(input);
-        }}
+        onSubmit={(e) => { e.preventDefault(); send(input); }}
         className="fixed bottom-[calc(env(safe-area-inset-bottom)+64px)] left-0 right-0 z-40 border-t border-border bg-background/95 backdrop-blur-xl"
       >
         <div className="mx-auto flex max-w-3xl items-center gap-2 px-4 py-3">
