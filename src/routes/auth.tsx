@@ -30,8 +30,8 @@ function AuthPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || password.length < 6) {
-      toast.error("كلمة المرور يجب ألا تقل عن ٦ أحرف");
+    if (!email || !password) {
+      toast.error("يرجى إدخال البريد وكلمة المرور");
       return;
     }
     setBusy(true);
