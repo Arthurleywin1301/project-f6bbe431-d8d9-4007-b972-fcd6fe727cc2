@@ -13,6 +13,7 @@ import { Route as StatsRouteImport } from './routes/stats'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as FiguresRouteImport } from './routes/figures'
 import { Route as BattlesRouteImport } from './routes/battles'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -36,6 +37,11 @@ const BattlesRoute = BattlesRouteImport.update({
   path: '/battles',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AssistantRoute = AssistantRouteImport.update({
   id: '/assistant',
   path: '/assistant',
@@ -50,6 +56,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/assistant': typeof AssistantRoute
+  '/auth': typeof AuthRoute
   '/battles': typeof BattlesRoute
   '/figures': typeof FiguresRoute
   '/map': typeof MapRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/assistant': typeof AssistantRoute
+  '/auth': typeof AuthRoute
   '/battles': typeof BattlesRoute
   '/figures': typeof FiguresRoute
   '/map': typeof MapRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/assistant': typeof AssistantRoute
+  '/auth': typeof AuthRoute
   '/battles': typeof BattlesRoute
   '/figures': typeof FiguresRoute
   '/map': typeof MapRoute
@@ -74,13 +83,21 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/assistant' | '/battles' | '/figures' | '/map' | '/stats'
+  fullPaths:
+    | '/'
+    | '/assistant'
+    | '/auth'
+    | '/battles'
+    | '/figures'
+    | '/map'
+    | '/stats'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/assistant' | '/battles' | '/figures' | '/map' | '/stats'
+  to: '/' | '/assistant' | '/auth' | '/battles' | '/figures' | '/map' | '/stats'
   id:
     | '__root__'
     | '/'
     | '/assistant'
+    | '/auth'
     | '/battles'
     | '/figures'
     | '/map'
@@ -90,6 +107,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AssistantRoute: typeof AssistantRoute
+  AuthRoute: typeof AuthRoute
   BattlesRoute: typeof BattlesRoute
   FiguresRoute: typeof FiguresRoute
   MapRoute: typeof MapRoute
@@ -126,6 +144,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BattlesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/assistant': {
       id: '/assistant'
       path: '/assistant'
@@ -146,6 +171,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AssistantRoute: AssistantRoute,
+  AuthRoute: AuthRoute,
   BattlesRoute: BattlesRoute,
   FiguresRoute: FiguresRoute,
   MapRoute: MapRoute,
@@ -154,3 +180,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
