@@ -74,13 +74,13 @@ function AuthPage() {
             <div>
               <label className="mb-1 block text-xs font-semibold text-muted-foreground">البريد الإلكتروني</label>
               <input
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 dir="ltr"
                 className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground focus:border-gold focus:outline-none"
-                placeholder="you@example.com"
+                placeholder="any@thing.com"
               />
             </div>
             <div>
@@ -90,12 +90,11 @@ function AuthPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
                 dir="ltr"
                 className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground focus:border-gold focus:outline-none"
                 placeholder="••••••••"
               />
-              <p className="mt-1 text-[10px] text-muted-foreground">٦ أحرف على الأقل</p>
+              <p className="mt-1 text-[10px] text-muted-foreground">نسخة تجريبية — أي قيمة مقبولة</p>
             </div>
 
             <button
