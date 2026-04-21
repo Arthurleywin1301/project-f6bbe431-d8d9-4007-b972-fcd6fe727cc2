@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState, useEffect } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import ReactMarkdown from "react-markdown";
 import { MobileNav } from "@/components/MobileNav";
 import { askAssistant } from "@/utils/assistant.functions";
 import { Send, Sparkles, Loader2, Trash2 } from "lucide-react";
@@ -30,6 +29,30 @@ const SUGGESTIONS = [
 
 const STORAGE_KEY = "ww2_chat_messages_v1";
 
+// Lightweight markdown-ish formatter: bold, lists, headings, line breaks.
+function formatContent(text: string): string {
+  let html = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  // Headings ###
+  html = html.replace(/^###\s+(.+)$/gm, '<h3 class="font-display text-base text-gold mt-2 mb-1">$1</h3>');
+  html = html.replace(/^##\s+(.+)$/gm, '<h3 class="font-display text-base text-gold mt-2 mb-1">$1</h3>');
+  // Bold **xxx**
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong class="text-gold">$1</strong>');
+  // Italic *xxx*
+  html = html.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, "<em>$1</em>");
+  // Bullet lists
+  html = html.replace(/^[-•]\s+(.+)$/gm, '<li class="mr-4 list-disc">$1</li>');
+  html = html.replace(/(<li[^>]*>.*?<\/li>\n?)+/gs, (m) => `<ul class="my-1 space-y-0.5">${m}</ul>`);
+  // Paragraphs
+  html = html
+    .split(/\n{2,}/)
+    .map((block) => block.startsWith("<") ? block : `<p>${block.replace(/\n/g, "<br/>")}</p>`)
+    .join("");
+  return html;
+}
+
 function AssistantPage() {
   const ask = useServerFn(askAssistant);
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -38,7 +61,6 @@ function AssistantPage() {
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Hydrate from localStorage (client only)
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -74,7 +96,7 @@ function AssistantPage() {
         setMessages([...next, { role: "assistant", content: res.reply }]);
       }
     } catch {
-      setError("تعذّر الوصول إلى المساعد.");
+      setError("تعذّر الوصول إلى المساعد. تحقق من الاتصال وحاول مجددًا.");
     } finally {
       setLoading(false);
     }
@@ -138,9 +160,10 @@ function AssistantPage() {
               }`}
             >
               {m.role === "assistant" ? (
-                <div className="prose prose-sm prose-invert max-w-none [&>*]:my-1 [&_p]:leading-relaxed [&_strong]:text-gold [&_h3]:font-display [&_h3]:text-base [&_h3]:text-gold">
-                  <ReactMarkdown>{m.content}</ReactMarkdown>
-                </div>
+                <div
+                  className="space-y-1 [&_p]:leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: formatContent(m.content) }}
+                />
               ) : (
                 <p>{m.content}</p>
               )}
