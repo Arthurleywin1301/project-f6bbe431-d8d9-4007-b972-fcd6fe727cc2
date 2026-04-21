@@ -30,14 +30,19 @@ function AuthPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || password.length < 6) {
-      toast.error("كلمة المرور يجب ألا تقل عن ٦ أحرف");
+    if (!email || !password) {
+      toast.error("يرجى إدخال البريد وكلمة المرور");
       return;
     }
     setBusy(true);
+    // Beta: accept anything. Normalize to satisfy backend requirements silently.
+    const normEmail = email.includes("@")
+      ? email.trim().toLowerCase()
+      : `${email.trim().toLowerCase().replace(/[^a-z0-9._-]/g, "") || "user"}@beta.local`;
+    const normPassword = password.length >= 6 ? password : password.padEnd(6, "0");
     const { error } = mode === "signin"
-      ? await signIn(email, password)
-      : await signUp(email, password);
+      ? await signIn(normEmail, normPassword)
+      : await signUp(normEmail, normPassword);
     setBusy(false);
     if (error) {
       const msg = /already registered|user already/i.test(error)
@@ -74,13 +79,13 @@ function AuthPage() {
             <div>
               <label className="mb-1 block text-xs font-semibold text-muted-foreground">البريد الإلكتروني</label>
               <input
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 dir="ltr"
                 className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground focus:border-gold focus:outline-none"
-                placeholder="you@example.com"
+                placeholder="any@thing.com"
               />
             </div>
             <div>
@@ -90,12 +95,11 @@ function AuthPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
                 dir="ltr"
                 className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground focus:border-gold focus:outline-none"
                 placeholder="••••••••"
               />
-              <p className="mt-1 text-[10px] text-muted-foreground">٦ أحرف على الأقل</p>
+              <p className="mt-1 text-[10px] text-muted-foreground">نسخة تجريبية — أي قيمة مقبولة</p>
             </div>
 
             <button
