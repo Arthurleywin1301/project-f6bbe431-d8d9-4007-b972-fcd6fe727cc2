@@ -21,7 +21,7 @@ export function MobileNav() {
       <ul className="flex items-stretch justify-around px-1 py-1">
         {items.map((item) => {
           const Icon = item.icon;
-          const active = pathname === item.to;
+          const active = pathname === item.to || (item.to === "/assistant" && pathname.startsWith("/assistant"));
           return (
             <li key={item.to} className="flex-1">
               <Link
