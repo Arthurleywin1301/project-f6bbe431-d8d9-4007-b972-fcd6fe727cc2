@@ -20,12 +20,12 @@ function Index() {
       <section className="relative overflow-hidden rounded-2xl border border-border gradient-card p-6 shadow-elegant">
         <div className="absolute -left-10 -top-10 h-40 w-40 rounded-full bg-gold opacity-10 blur-3xl" />
         <div className="absolute -bottom-10 -right-10 h-40 w-40 rounded-full opacity-10 blur-3xl" style={{ background: "var(--allies)" }} />
-        <p className="font-numeric text-xs tracking-widest text-gold">١٩٣٩ — ١٩٤٥</p>
+        <p className="font-numeric text-xs tracking-widest text-gold">1939 — 1945</p>
         <h2 className="mt-2 font-display text-3xl font-bold leading-tight text-foreground">
           أعظم صراع عرفه التاريخ
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          ست سنوات غيّرت وجه العالم. أكثر من ٧٠ مليون قتيل، ٣٠ دولة متحاربة، ومعارك كتبت مصير القرن العشرين. اكتشف القصة كاملة بالعربية.
+          ست سنوات غيّرت وجه العالم. أكثر من 70 مليون قتيل، 30 دولة متحاربة، ومعارك كتبت مصير القرن العشرين. اكتشف القصة كاملة بالعربية.
         </p>
         <Link
           to="/assistant"
@@ -63,13 +63,13 @@ function Index() {
         <h3 className="font-display text-lg font-bold text-foreground">محطات رئيسية</h3>
         <ol className="mt-4 space-y-3 border-r-2 border-gold/40 pr-4">
           {[
-            ["١ سبتمبر ١٩٣٩", "ألمانيا تغزو بولندا — بداية الحرب"],
-            ["٢٢ يونيو ١٩٤١", "عملية بارباروسا ضد الاتحاد السوفيتي"],
-            ["٧ ديسمبر ١٩٤١", "هجوم بيرل هاربر — أمريكا تدخل الحرب"],
-            ["٢ فبراير ١٩٤٣", "استسلام الألمان في ستالينغراد"],
-            ["٦ يونيو ١٩٤٤", "إنزال نورماندي — يوم النصر"],
-            ["٨ مايو ١٩٤٥", "استسلام ألمانيا"],
-            ["٢ سبتمبر ١٩٤٥", "استسلام اليابان — نهاية الحرب"],
+            ["1 سبتمبر 1939", "ألمانيا تغزو بولندا — بداية الحرب"],
+            ["22 يونيو 1941", "عملية بارباروسا ضد الاتحاد السوفيتي"],
+            ["7 ديسمبر 1941", "هجوم بيرل هاربر — أمريكا تدخل الحرب"],
+            ["2 فبراير 1943", "استسلام الألمان في ستالينغراد"],
+            ["6 يونيو 1944", "إنزال نورماندي — يوم النصر"],
+            ["8 مايو 1945", "استسلام ألمانيا"],
+            ["2 سبتمبر 1945", "استسلام اليابان — نهاية الحرب"],
           ].map(([date, text]) => (
             <li key={date} className="relative">
               <span className="absolute -right-[22px] top-1.5 h-2.5 w-2.5 rounded-full bg-gold shadow-gold" />
