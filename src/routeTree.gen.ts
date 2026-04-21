@@ -9,8 +9,32 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StatsRouteImport } from './routes/stats'
+import { Route as MapRouteImport } from './routes/map'
+import { Route as FiguresRouteImport } from './routes/figures'
+import { Route as BattlesRouteImport } from './routes/battles'
 import { Route as IndexRouteImport } from './routes/index'
 
+const StatsRoute = StatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapRoute = MapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FiguresRoute = FiguresRouteImport.update({
+  id: '/figures',
+  path: '/figures',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BattlesRoute = BattlesRouteImport.update({
+  id: '/battles',
+  path: '/battles',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +43,72 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/battles': typeof BattlesRoute
+  '/figures': typeof FiguresRoute
+  '/map': typeof MapRoute
+  '/stats': typeof StatsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/battles': typeof BattlesRoute
+  '/figures': typeof FiguresRoute
+  '/map': typeof MapRoute
+  '/stats': typeof StatsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/battles': typeof BattlesRoute
+  '/figures': typeof FiguresRoute
+  '/map': typeof MapRoute
+  '/stats': typeof StatsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/battles' | '/figures' | '/map' | '/stats'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/battles' | '/figures' | '/map' | '/stats'
+  id: '__root__' | '/' | '/battles' | '/figures' | '/map' | '/stats'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BattlesRoute: typeof BattlesRoute
+  FiguresRoute: typeof FiguresRoute
+  MapRoute: typeof MapRoute
+  StatsRoute: typeof StatsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/stats': {
+      id: '/stats'
+      path: '/stats'
+      fullPath: '/stats'
+      preLoaderRoute: typeof StatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/figures': {
+      id: '/figures'
+      path: '/figures'
+      fullPath: '/figures'
+      preLoaderRoute: typeof FiguresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/battles': {
+      id: '/battles'
+      path: '/battles'
+      fullPath: '/battles'
+      preLoaderRoute: typeof BattlesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,7 +121,20 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BattlesRoute: BattlesRoute,
+  FiguresRoute: FiguresRoute,
+  MapRoute: MapRoute,
+  StatsRoute: StatsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
