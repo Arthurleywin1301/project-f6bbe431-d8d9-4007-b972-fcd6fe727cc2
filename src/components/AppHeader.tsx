@@ -11,7 +11,7 @@ export function AppHeader({ title = "الحرب العالمية الثانية"
       <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
         <Link to="/" className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-md bg-gold shadow-gold">
-            <span className="font-display text-lg font-bold text-primary-foreground">٤٥</span>
+            <span className="font-display text-lg font-bold text-primary-foreground">45</span>
           </div>
           <div className="text-right">
             <h1 className="font-display text-base font-bold leading-tight text-foreground">{title}</h1>
@@ -20,7 +20,7 @@ export function AppHeader({ title = "الحرب العالمية الثانية"
         </Link>
         <div className="text-left">
           <p className="font-numeric text-[10px] text-gold">1939 — 1945</p>
-          <p className="text-[10px] text-muted-foreground">٦ سنوات</p>
+          <p className="text-[10px] text-muted-foreground">6 سنوات</p>
         </div>
       </div>
     </header>

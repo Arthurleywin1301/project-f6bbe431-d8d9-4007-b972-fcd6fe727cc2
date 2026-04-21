@@ -1,21 +1,19 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState, useEffect } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import ReactMarkdown from "react-markdown";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { MobileNav } from "@/components/MobileNav";
 import { askAssistant } from "@/utils/assistant.functions";
-import { Send, Sparkles, Loader2, ArrowRight } from "lucide-react";
-import { toast } from "sonner";
+import { Send, Sparkles, Loader2, Trash2 } from "lucide-react";
 
-export const Route = createFileRoute("/assistant/$id")({
+export const Route = createFileRoute("/assistant")({
   head: () => ({
     meta: [
-      { title: "محادثة — المساعد الذكي" },
+      { title: "المساعد الذكي — موسوعة الحرب العالمية الثانية" },
+      { name: "description", content: "اسأل المساعد الذكي أي سؤال عن الحرب العالمية الثانية." },
     ],
   }),
-  component: ChatPage,
+  component: AssistantPage,
 });
 
 interface Msg {
@@ -27,48 +25,32 @@ const SUGGESTIONS = [
   "لماذا انهزمت ألمانيا في ستالينغراد؟",
   "من هو إرفين روميل؟",
   "ما أهمية إنزال نورماندي؟",
+  "ما الفرق بين الحلفاء والمحور؟",
 ];
 
-function ChatPage() {
-  const { id } = Route.useParams();
-  const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
-  const ask = useServerFn(askAssistant);
+const STORAGE_KEY = "ww2_chat_messages_v1";
 
+function AssistantPage() {
+  const ask = useServerFn(askAssistant);
   const [messages, setMessages] = useState<Msg[]>([]);
-  const [title, setTitle] = useState("محادثة جديدة");
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [hydrating, setHydrating] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auth gate + load conversation
+  // Hydrate from localStorage (client only)
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      navigate({ to: "/auth" });
-      return;
-    }
-    void hydrate();
-  }, [user, authLoading, id]);
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) setMessages(JSON.parse(raw));
+    } catch {}
+  }, []);
 
-  const hydrate = async () => {
-    setHydrating(true);
-    const [{ data: conv, error: ce }, { data: msgs, error: me }] = await Promise.all([
-      supabase.from("conversations").select("title").eq("id", id).maybeSingle(),
-      supabase.from("messages").select("role, content").eq("conversation_id", id).order("created_at", { ascending: true }),
-    ]);
-    if (ce || !conv) {
-      toast.error("لم نجد هذه المحادثة");
-      navigate({ to: "/assistant" });
-      return;
-    }
-    if (me) toast.error("تعذّر تحميل الرسائل");
-    setTitle(conv.title);
-    setMessages(((msgs ?? []) as Msg[]));
-    setHydrating(false);
-  };
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    } catch {}
+  }, [messages]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -76,7 +58,7 @@ function ChatPage() {
 
   const send = async (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed || loading || !user) return;
+    if (!trimmed || loading) return;
     setError(null);
     const userMsg: Msg = { role: "user", content: trimmed };
     const next = [...messages, userMsg];
@@ -84,28 +66,12 @@ function ChatPage() {
     setInput("");
     setLoading(true);
 
-    // Persist user message
-    await supabase.from("messages").insert({
-      conversation_id: id, user_id: user.id, role: "user", content: trimmed,
-    });
-
-    // Auto-title from first message
-    if (messages.length === 0) {
-      const newTitle = trimmed.slice(0, 60);
-      setTitle(newTitle);
-      await supabase.from("conversations").update({ title: newTitle }).eq("id", id);
-    }
-
     try {
       const res = await ask({ data: { messages: next } });
       if (res.error) {
         setError(res.error);
       } else {
-        const assistantMsg: Msg = { role: "assistant", content: res.reply };
-        setMessages([...next, assistantMsg]);
-        await supabase.from("messages").insert({
-          conversation_id: id, user_id: user.id, role: "assistant", content: res.reply,
-        });
+        setMessages([...next, { role: "assistant", content: res.reply }]);
       }
     } catch {
       setError("تعذّر الوصول إلى المساعد.");
@@ -114,28 +80,31 @@ function ChatPage() {
     }
   };
 
-  if (authLoading || hydrating) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-gold" />
-      </div>
-    );
-  }
+  const clearChat = () => {
+    setMessages([]);
+    setError(null);
+  };
 
   return (
     <div className="flex min-h-screen flex-col pb-24">
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
-          <Link to="/assistant" className="rounded-full p-2 text-muted-foreground hover:bg-card hover:text-gold" aria-label="رجوع">
-            <ArrowRight className="h-4 w-4" />
-          </Link>
           <div className="flex h-9 w-9 items-center justify-center rounded-md bg-gold shadow-gold">
             <Sparkles className="h-4 w-4 text-primary-foreground" />
           </div>
           <div className="flex-1 overflow-hidden">
-            <h1 className="truncate font-display text-base font-bold text-foreground">{title}</h1>
+            <h1 className="truncate font-display text-base font-bold text-foreground">المساعد الذكي</h1>
             <p className="text-[10px] text-muted-foreground">خبير في الحرب العالمية الثانية</p>
           </div>
+          {messages.length > 0 && (
+            <button
+              onClick={clearChat}
+              className="rounded-full p-2 text-muted-foreground hover:bg-card hover:text-destructive"
+              aria-label="مسح المحادثة"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </header>
 
