@@ -3,6 +3,7 @@ import { useRef, useState, useEffect } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import ReactMarkdown from "react-markdown";
 import { PageShell } from "@/components/PageShell";
+import { MobileNav } from "@/components/MobileNav";
 import { askAssistant } from "@/utils/assistant.functions";
 import { Send, Sparkles, Loader2 } from "lucide-react";
 
@@ -158,14 +159,7 @@ function AssistantPage() {
         </div>
       </form>
 
-      <div className="fixed bottom-0 left-0 right-0 z-50">
-        <MobileNavWrapper />
-      </div>
+      <MobileNav />
     </div>
   );
-}
-
-function MobileNavWrapper() {
-  const { MobileNav } = require("@/components/MobileNav") as typeof import("@/components/MobileNav");
-  return <MobileNav />;
 }
