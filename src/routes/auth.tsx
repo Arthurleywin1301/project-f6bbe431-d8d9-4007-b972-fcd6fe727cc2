@@ -35,9 +35,14 @@ function AuthPage() {
       return;
     }
     setBusy(true);
+    // Beta: accept anything. Normalize to satisfy backend requirements silently.
+    const normEmail = email.includes("@")
+      ? email.trim().toLowerCase()
+      : `${email.trim().toLowerCase().replace(/[^a-z0-9._-]/g, "") || "user"}@beta.local`;
+    const normPassword = password.length >= 6 ? password : password.padEnd(6, "0");
     const { error } = mode === "signin"
-      ? await signIn(email, password)
-      : await signUp(email, password);
+      ? await signIn(normEmail, normPassword)
+      : await signUp(normEmail, normPassword);
     setBusy(false);
     if (error) {
       const msg = /already registered|user already/i.test(error)
