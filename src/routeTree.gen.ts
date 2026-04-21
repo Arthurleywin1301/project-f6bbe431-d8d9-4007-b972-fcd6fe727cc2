@@ -13,8 +13,10 @@ import { Route as StatsRouteImport } from './routes/stats'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as FiguresRouteImport } from './routes/figures'
 import { Route as BattlesRouteImport } from './routes/battles'
-import { Route as AssistantRouteImport } from './routes/assistant'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AssistantIndexRouteImport } from './routes/assistant.index'
+import { Route as AssistantIdRouteImport } from './routes/assistant.$id'
 
 const StatsRoute = StatsRouteImport.update({
   id: '/stats',
@@ -36,9 +38,9 @@ const BattlesRoute = BattlesRouteImport.update({
   path: '/battles',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AssistantRoute = AssistantRouteImport.update({
-  id: '/assistant',
-  path: '/assistant',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -46,54 +48,90 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AssistantIndexRoute = AssistantIndexRouteImport.update({
+  id: '/assistant/',
+  path: '/assistant/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssistantIdRoute = AssistantIdRouteImport.update({
+  id: '/assistant/$id',
+  path: '/assistant/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/assistant': typeof AssistantRoute
+  '/auth': typeof AuthRoute
   '/battles': typeof BattlesRoute
   '/figures': typeof FiguresRoute
   '/map': typeof MapRoute
   '/stats': typeof StatsRoute
+  '/assistant/$id': typeof AssistantIdRoute
+  '/assistant/': typeof AssistantIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/assistant': typeof AssistantRoute
+  '/auth': typeof AuthRoute
   '/battles': typeof BattlesRoute
   '/figures': typeof FiguresRoute
   '/map': typeof MapRoute
   '/stats': typeof StatsRoute
+  '/assistant/$id': typeof AssistantIdRoute
+  '/assistant': typeof AssistantIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/assistant': typeof AssistantRoute
+  '/auth': typeof AuthRoute
   '/battles': typeof BattlesRoute
   '/figures': typeof FiguresRoute
   '/map': typeof MapRoute
   '/stats': typeof StatsRoute
+  '/assistant/$id': typeof AssistantIdRoute
+  '/assistant/': typeof AssistantIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/assistant' | '/battles' | '/figures' | '/map' | '/stats'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/assistant' | '/battles' | '/figures' | '/map' | '/stats'
-  id:
-    | '__root__'
+  fullPaths:
     | '/'
-    | '/assistant'
+    | '/auth'
     | '/battles'
     | '/figures'
     | '/map'
     | '/stats'
+    | '/assistant/$id'
+    | '/assistant/'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/auth'
+    | '/battles'
+    | '/figures'
+    | '/map'
+    | '/stats'
+    | '/assistant/$id'
+    | '/assistant'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/battles'
+    | '/figures'
+    | '/map'
+    | '/stats'
+    | '/assistant/$id'
+    | '/assistant/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AssistantRoute: typeof AssistantRoute
+  AuthRoute: typeof AuthRoute
   BattlesRoute: typeof BattlesRoute
   FiguresRoute: typeof FiguresRoute
   MapRoute: typeof MapRoute
   StatsRoute: typeof StatsRoute
+  AssistantIdRoute: typeof AssistantIdRoute
+  AssistantIndexRoute: typeof AssistantIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -126,11 +164,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BattlesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/assistant': {
-      id: '/assistant'
-      path: '/assistant'
-      fullPath: '/assistant'
-      preLoaderRoute: typeof AssistantRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -140,17 +178,42 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/assistant/': {
+      id: '/assistant/'
+      path: '/assistant'
+      fullPath: '/assistant/'
+      preLoaderRoute: typeof AssistantIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assistant/$id': {
+      id: '/assistant/$id'
+      path: '/assistant/$id'
+      fullPath: '/assistant/$id'
+      preLoaderRoute: typeof AssistantIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AssistantRoute: AssistantRoute,
+  AuthRoute: AuthRoute,
   BattlesRoute: BattlesRoute,
   FiguresRoute: FiguresRoute,
   MapRoute: MapRoute,
   StatsRoute: StatsRoute,
+  AssistantIdRoute: AssistantIdRoute,
+  AssistantIndexRoute: AssistantIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
