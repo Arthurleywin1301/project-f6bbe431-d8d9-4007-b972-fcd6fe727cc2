@@ -1,0 +1,27 @@
+{
+  "name": "موسوعة الحرب العالمية الثانية",
+  "short_name": "WW2",
+  "description": "موسوعة تفاعلية بالعربية عن الحرب العالمية الثانية",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a2547",
+  "theme_color": "#1a2547",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "/app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
