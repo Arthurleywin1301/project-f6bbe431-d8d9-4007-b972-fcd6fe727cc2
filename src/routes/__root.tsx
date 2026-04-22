@@ -1,5 +1,7 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { registerServiceWorker } from "@/lib/registerSW";
 
 import appCss from "../styles.css?url";
 
@@ -66,6 +68,10 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
+
   return (
     <>
       <Outlet />
