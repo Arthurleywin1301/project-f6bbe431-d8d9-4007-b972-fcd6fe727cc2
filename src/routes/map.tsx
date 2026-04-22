@@ -108,10 +108,10 @@ function MapPage() {
             const color = b.winner === "allies" ? "oklch(0.78 0.18 240)" : "oklch(0.72 0.22 25)";
             return (
               <g key={b.id} onClick={() => setSelected(b.id)} style={{ cursor: "pointer" }}>
-                <circle cx={b.x} cy={b.y} r={active ? 1.4 : 0.9} fill={color} opacity="0.5">
-                  <animate attributeName="r" values={`${active ? 1.4 : 0.9};${active ? 2.4 : 1.8};${active ? 1.4 : 0.9}`} dur="2s" repeatCount="indefinite" />
+                <circle cx={b.x} cy={b.y} r={active ? 1.0 : 0.65} fill={color} opacity="0.5">
+                  <animate attributeName="r" values={`${active ? 1.0 : 0.65};${active ? 1.8 : 1.3};${active ? 1.0 : 0.65}`} dur="2s" repeatCount="indefinite" />
                 </circle>
-                <circle cx={b.x} cy={b.y} r={active ? 0.9 : 0.6} fill="oklch(0.85 0.15 85)" stroke="oklch(0.18 0.04 260)" strokeWidth="0.12" />
+                <circle cx={b.x} cy={b.y} r={active ? 0.6 : 0.4} fill="oklch(0.85 0.15 85)" stroke="oklch(0.18 0.04 260)" strokeWidth="0.08" />
                 {active && (
                   <text
                     x={b.x}
