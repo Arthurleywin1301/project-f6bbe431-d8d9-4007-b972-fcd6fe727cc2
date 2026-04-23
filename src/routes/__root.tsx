@@ -75,6 +75,7 @@ function RootComponent() {
 
   return (
     <>
+      <SplashScreen />
       <Outlet />
       <Toaster position="top-center" />
     </>
